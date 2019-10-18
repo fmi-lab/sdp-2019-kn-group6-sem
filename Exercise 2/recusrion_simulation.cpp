@@ -25,7 +25,26 @@ unsigned fact_stack(int n){
     return result;
 }
 
+unsigned fact_stack2(int n)
+{
+    stack<int> st;
+    st.push(n);
+    int result = 1;
+    while(!st.empty())
+    {
+        int current = st.top();
+        st.pop();
+        if(current > 0)
+        {
+            result *= current;
+            st.push(current-1);
+        }
+    }
+    return result;
+}
+
 int main(){
-    cout<<fact(4);
-    cout<<endl<<fact_stack(5);
+    cout<<fact(4)<<endl;
+    cout<<fact_stack(5)<<endl;
+    cout<<fact_stack2(5)<<endl;
 }

@@ -92,11 +92,9 @@ double calculate(const string& str)
     stack<double> container;
     for(const char& c : str)
     {
-//        cout<<(int)c<<endl;
         if(number(c))
         {
             container.push((c-'0'));
-//            cout<<container.top();
         }
         else if(oper(c))
         {
