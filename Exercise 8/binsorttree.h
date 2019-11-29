@@ -11,6 +11,9 @@ struct BinTreeNode
 
     BinTreeNode (const T&, BinTreeNode*, BinTreeNode*);
     BinTreeNode ();
+
+    BinTreeNode<T>* inorderSuccessor();
+    BinTreeNode<T>* inorderSuccessorHelp( BinTreeNode<T>*);
 };
 
 template <class T>
@@ -23,6 +26,7 @@ class BinTree
 //        BinTree (const T&, const BinTree<T>&, const BinTree<T>&);
 
         void addElement (const T&);
+        void removeElement (const T&);
 
         void printTree (std::ostream&);
         void prettyPrint (std::ostream&);
@@ -39,6 +43,7 @@ class BinTree
         BinTreeNode<T> *root;
 
         void addHelp(BinTreeNode<T>*&, const T&);
+        void removeHelp(BinTreeNode<T>*, const T&);
 
         void printTreeHelp (std::ostream&, BinTreeNode<T> *current);
         void prettyPrintHelp (std::ostream&, BinTreeNode<T> *current, int level);

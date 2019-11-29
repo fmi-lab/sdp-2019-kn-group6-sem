@@ -11,4 +11,8 @@ int main(){
     test.addElement(35);
 
     test.prettyPrint(cout);
+
+    test.removeElement(10);
+    cout<<("--------------------\n");
+    test.prettyPrint(cout);
 }

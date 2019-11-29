@@ -57,6 +57,93 @@ void BinTree<T>::addElement(const T& x)
     addHelp(root, x);
 }
 
+template <class T>
+BinTreeNode<T>* BinTreeNode<T>::inorderSuccessorHelp( BinTreeNode<T>* current){
+    if(current->right){
+        return inorderSuccessorHelp(current->right);
+    }
+    return current;
+}
+template <class T>
+BinTreeNode<T>* BinTreeNode<T>::inorderSuccessor(){
+    if(this->left){
+        return inorderSuccessorHelp(this);
+    }
+    return nullptr;
+}
+
+template <class T>
+void BinTree<T>::removeHelp(BinTreeNode<T>* current, const T& x)
+{
+    BinTreeNode<T>* cur = current;
+    cout<<"current->data = "<<current->data<<endl;
+    if(current->left)
+    {
+        cout<<"go left\n";
+        BinTreeNode<T>* temp = current;
+        current = current->left;
+        if(current->data == x)
+        {
+            cout<<"found! "<<x<<endl;
+            if(!current->left && !current->right)
+            {
+                delete current;
+                temp->left = nullptr;
+            } else if(current->left && !current->right){
+                temp->left = current->left;
+                delete current;
+            } else if(!current->left && current->right){
+                temp->left = current->right;
+                delete current;
+            } else {
+                temp = current->inorderSuccessor();
+                swap(temp->data, current->data);
+                delete temp;
+            }
+        }
+        else
+        {
+            cout<<"not found() "<<x<<endl;
+            removeHelp(current, x);
+        }
+    }
+    current = cur;
+    if(current->right)
+    {
+        cout<<"go right\n";
+        BinTreeNode<T>* temp = current;
+        current = current->right;
+        if(current->data == x)
+        {
+            if(!current->left && !current->right)
+            {
+                delete current;
+                temp->right = nullptr;
+            } else if(current->left && !current->right){
+                temp->right = current->left;
+                delete current;
+            } else if(!current->left && current->right){
+                temp->right = current->right;
+                delete current;
+            } else {
+                temp = current->inorderSuccessor();
+                swap(temp->data, current->data);
+                delete temp;
+            }
+        }
+        else
+        {
+            removeHelp(current, x);
+        }
+    }
+}
+
+template <class T>
+void BinTree<T>::removeElement(const T& x)
+{
+    removeHelp(root, x);
+}
+
 
 template <class T>
 void BinTree<T>::printTree (std::ostream& out)
