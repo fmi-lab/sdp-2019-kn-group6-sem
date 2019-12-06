@@ -9,12 +9,11 @@
 using namespace std;
 
 template <class T>
-AVLnode<T>::AVLnode (const T& _data, AVLnode<T>* _left, AVLnode<T>* _right):data(_data),left(_left),right(_right) {}
+AVLnode<T>::AVLnode (const T& _data, AVLnode<T>* _left, AVLnode<T>* _right, const int& balance):data(_data),left(_left),right(_right), balance(balance) {}
 
 template <class T>
 AVLnode<T>::AVLnode ()
 {}
-
 
 template <class T>
 AVLtree<T>::AVLtree ()
@@ -28,28 +27,6 @@ AVLtree<T>::AVLtree (const T &x)
     root = new AVLnode<T> (x,nullptr,nullptr);
 }
 
-template <class T>
-void AVLtree<T>::addHelp(AVLnode<T>*& current, const T& x)
-{
-    if(!current)
-    {
-        current = new AVLnode<T>(x, nullptr, nullptr);
-    }
-    else if(current->data < x)
-    {
-        addHelp(current->right, x);
-    }
-    else if(current->data >= x)
-    {
-        addHelp(current->left, x);
-    }
-}
-
-template <class T>
-void AVLtree<T>::addElement(const T& x)
-{
-    addHelp(root, x);
-}
 
 template <class T>
 AVLnode<T>* AVLnode<T>::inorderSuccessorHelp( AVLnode<T>* current){
@@ -64,78 +41,6 @@ AVLnode<T>* AVLnode<T>::inorderSuccessor(){
         return inorderSuccessorHelp(this);
     }
     return nullptr;
-}
-
-template <class T>
-void AVLtree<T>::removeHelp(AVLnode<T>* current, const T& x)
-{
-    AVLnode<T>* cur = current;
-    cout<<"current->data = "<<current->data<<endl;
-    if(current->left)
-    {
-        cout<<"go left\n";
-        AVLnode<T>* temp = current;
-        current = current->left;
-        if(current->data == x)
-        {
-            cout<<"found! "<<x<<endl;
-            if(!current->left && !current->right)
-            {
-                delete current;
-                temp->left = nullptr;
-            } else if(current->left && !current->right){
-                temp->left = current->left;
-                delete current;
-            } else if(!current->left && current->right){
-                temp->left = current->right;
-                delete current;
-            } else {
-                temp = current->inorderSuccessor();
-                swap(temp->data, current->data);
-                delete temp;
-            }
-        }
-        else
-        {
-            cout<<"not found() "<<x<<endl;
-            removeHelp(current, x);
-        }
-    }
-    current = cur;
-    if(current->right)
-    {
-        cout<<"go right\n";
-        AVLnode<T>* temp = current;
-        current = current->right;
-        if(current->data == x)
-        {
-            if(!current->left && !current->right)
-            {
-                delete current;
-                temp->right = nullptr;
-            } else if(current->left && !current->right){
-                temp->right = current->left;
-                delete current;
-            } else if(!current->left && current->right){
-                temp->right = current->right;
-                delete current;
-            } else {
-                temp = current->inorderSuccessor();
-                swap(temp->data, current->data);
-                delete temp;
-            }
-        }
-        else
-        {
-            removeHelp(current, x);
-        }
-    }
-}
-
-template <class T>
-void AVLtree<T>::removeElement(const T& x)
-{
-    removeHelp(root, x);
 }
 
 template <class T>
@@ -177,5 +82,137 @@ bool AVLtree<T>::memberHelp (const T& x, AVLnode<T> *current)
            memberHelp (x,current->right);
 }
 
+template <class T>
+void AVLtree<T>::leftRotate(AVLnode<T>*& node){
+    if(!node->right){
+        return;
+    }
+
+    AVLnode<T>* temp = node;
+    node = node->right;
+    temp->right = node->left;
+    node->left = temp;
+
+    temp->balance = temp->balance - 1;
+    if(node->balance > 0){
+        temp->balance = temp->balance - node->balance;
+    }
+    node->balance = node->balance - 1;
+    if(temp->balance < 0){
+        node->balance = node->balance + temp->balance;
+    }
+}
+
+template <class T>
+void AVLtree<T>::rightRotate(AVLnode<T>*& node){
+    if(!node->left){
+        return;
+    }
+
+    AVLnode<T>* temp = node;
+    node = node->left;
+    temp->left = node->right;
+    node->right = temp;
+
+    temp->balance = temp->balance + 1;
+    if(node->balance < 0){
+        temp->balance = temp->balance - node->balance;
+    }
+    node->balance = node->balance + 1;
+    if(temp->balance > 0){
+        node->balance = node->balance + temp->balance;
+    }
+}
+
+template <class T>
+int AVLtree<T>::insertElement(const T& x, AVLnode<T>*& node){
+    int h = 0;
+    if(!node){
+        node = new AVLnode<T>(x, nullptr, nullptr, 0);
+        assert(node);
+        h = 1;
+    }
+    else if(x > node->data){
+        ///включваме го в ДПД
+        if(insertElement(x, node->right)){
+            node->balance++;
+            if(node->balance == 1){
+                h = 1;
+            } else if(node->balance == 2){
+                if(node->right->balance == -1){
+                    rightRotate(node->right);
+                }
+                leftRotate(node);
+            }
+        }
+    } else if(x <= node->data){
+        ///включваме го в ЛПД
+        if(insertElement(x, node->left)){
+            node->balance--;
+            if(node->balance == -1){
+                h = -1;
+            } else if(node->balance == -2){
+                if(node->left->balance == 1){
+                    leftRotate(node->left);
+                }
+                rightRotate(node);
+            }
+        }
+    }
+    return h;
+}
+
+int AVLtree<T>::deleteElement(const T& x, AVLnode<T>*& node){
+    int h = 0;
+    AVLnode<T>* temp;
+    if(!node){
+        return 0;
+    }
+    if(x < node->data){
+        if(deleteElement(x, node->left)){
+            node->balance++;
+            if(node->balance == 0){
+                h = 1;
+            } else if(node->balance == 2){
+                if(node->right->balance == -1){
+                    rightRotate(node->right);
+                }
+                leftrRotate(node);
+                if (node->balance == 0) h = 1;
+            }
+        }
+    } else if (x > node->data){
+        if(deleteElement(x, node->right)){
+            node->balance --;
+            if(node->balance == 0){
+                h = 1;
+            } else if (node->balance == -2){
+                if(node->left->balance == 1){
+                    leftRotate(node->left);
+                }
+                rightRotate(node);
+                if (node->balance == 0) h = 1;
+            }
+        }
+    } else {
+        if(!node->right){
+            temp = node;
+            node = node->left;
+            delete temp;
+            return 1;
+        } else if(!node->left){
+            temp = node;
+            node = node->right;
+            delete temp;
+            return 1;
+        } else{
+            int t = node->data;
+            AVLnode<T>* succ = inorderSuccessor();
+            node->data = succ->data;
+            succ->data = t;
+            deleteElement(t, node->left);
+        }
+    }
+}
 
 #endif

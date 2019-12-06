@@ -8,8 +8,9 @@ struct AVLnode
 {
     T data;
     AVLnode *left, *right;
+    int balance;
 
-    AVLnode (const T&, AVLnode*, AVLnode*);
+    AVLnode (const T& = T(), AVLnode* = nullptr, AVLnode* = nullptr, const int& = 0);
     AVLnode ();
 
     AVLnode<T>* inorderSuccessor();
@@ -24,22 +25,29 @@ class AVLtree
         AVLtree ();
         AVLtree (const T&);
 
-        void addElement (const T&);
-        void removeElement (const T&);
-
         void prettyPrint (std::ostream&);
 
         bool member (const T& x);
 
+        void leftRotate(AVLnode<T>*&);
+        void rightRotate(AVLnode<T>*&);
+
+        int insertElement(const T& = T(), AVLnode<T>*&);
+
+        int deleteElement(const T& x, AVLnode<T>*& node);
+
+        int getBalance()const{
+            return root->balance;
+        }
+
+        AVLnode<T>* getRoot(){
+            return root;
+        }
+
     private:
         AVLnode<T> *root;
 
-        void addHelp(AVLnode<T>*&, const T&);
-        void removeHelp(AVLnode<T>*, const T&);
-
-        void printTreeHelp (std::ostream&, AVLnode<T> *current);
         void prettyPrintHelp (std::ostream&, AVLnode<T> *current, int level);
-        void dottyPrintHelp (std::ostream&, AVLnode<T> *current);
 
         bool memberHelp (const T& x, AVLnode<T> *current);
 };
